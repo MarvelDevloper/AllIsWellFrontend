@@ -26,10 +26,8 @@ const EventsListing = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await eventService.getAllEvents();
-        // Adjust depending on the exact backend response format. 
-        // Based on user input: Response: { success: true, data: [] }
-        setEvents(response.data || []);
+        const data = await eventService.getAllEvents();
+        setEvents(Array.isArray(data) ? data : (data?.data || data?.events || []));
       } catch (error) {
         console.error("Error fetching events:", error);
         setEvents([]);
@@ -146,3 +144,156 @@ const EventsListing = () => {
 };
 
 export default EventsListing;
+
+
+
+// import React, { useEffect, useState } from "react";
+// import Slider from "react-slick";
+// import { Calendar, Clock, SearchX } from "lucide-react";
+// import { eventService } from "../../../services/event.service";
+
+// const EventSkeleton = () => (
+//   <div className="animate-pulse flex flex-col h-full bg-white rounded-lg overflow-hidden shadow">
+//     <div className="h-64 bg-gray-200"></div>
+//     <div className="p-6 flex flex-col flex-grow">
+//       <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+//       <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+//       <div className="h-4 bg-gray-200 rounded w-5/6 mb-6"></div>
+//       <div className="mt-auto space-y-3">
+//         <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+//         <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+//       </div>
+//     </div>
+//   </div>
+// );
+
+// const EventsListing = () => {
+//   const [events, setEvents] = useState([]);
+//   const [loading, setLoading] = useState(true);
+
+//  useEffect(() => {
+//   const fetchEvents = async () => {
+//     try {
+//       const data = await eventService.getAllEvents();
+
+//       console.log("EVENT DATA:", data);
+
+//       setEvents(Array.isArray(data) ? data : data.events || []);
+//     } catch (error) {
+//       console.error("Error fetching events:", error);
+//       setEvents([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   fetchEvents();
+// }, []);
+
+//   const sliderSettings = {
+//     dots: true,
+//     infinite: true,
+//     speed: 500,
+//     slidesToShow: 1,
+//     slidesToScroll: 1,
+//     arrows: false,
+//     autoplay: true,
+//     autoplaySpeed: 3000,
+//   };
+
+//   const formatDate = (dateString) => {
+//     if (!dateString) return "";
+//     return new Date(dateString).toLocaleDateString("en-US", {
+//       weekday: "short",
+//       year: "numeric",
+//       month: "long",
+//       day: "numeric",
+//     });
+//   };
+
+//   return (
+//     <div className="bg-gray-50 min-h-screen py-16">
+//       <div className="max-w-7xl mx-auto px-4">
+//         <div className="text-center mb-16">
+//           <h1 className="text-4xl font-bold">Community Events</h1>
+//           <p className="mt-4 text-gray-600">
+//             Join us in our upcoming activities.
+//           </p>
+//         </div>
+
+//         {loading ? (
+//           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+//             {[1, 2, 3, 4, 5, 6].map((i) => (
+//               <EventSkeleton key={i} />
+//             ))}
+//           </div>
+//         ) : events.length > 0 ? (
+//           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+//             {events.map((event) => (
+//               <div
+//                 key={event._id}
+//                 className="bg-white rounded-lg shadow overflow-hidden flex flex-col"
+//               >
+//                 {/* IMAGE */}
+//                 <div className="h-64 bg-gray-100">
+//                   {event.images?.length > 1 ? (
+//                     <Slider {...sliderSettings}>
+//                       {event.images.map((img, i) => (
+//                         <img
+//                           key={i}
+//                           src={img.url}
+//                           alt={event.title}
+//                           className="h-64 w-full object-cover"
+//                         />
+//                       ))}
+//                     </Slider>
+//                   ) : event.images?.length === 1 ? (
+//                     <img
+//                       src={event.images[0].url}
+//                       alt={event.title}
+//                       className="h-64 w-full object-cover"
+//                     />
+//                   ) : (
+//                     <div className="h-64 flex items-center justify-center text-gray-400">
+//                       No Image
+//                     </div>
+//                   )}
+//                 </div>
+
+//                 {/* CONTENT */}
+//                 <div className="p-6 flex flex-col flex-grow">
+//                   <h3 className="text-xl font-bold mb-2">{event.title}</h3>
+
+//                   <p className="text-gray-600 flex-grow">
+//                     {event.description}
+//                   </p>
+
+//                   <div className="mt-4 border-t pt-4 text-sm text-gray-500 space-y-2">
+//                     <div className="flex items-center gap-2">
+//                       <Calendar size={16} />
+//                       {formatDate(event.startDate)}
+//                     </div>
+
+//                     {event.endDate && (
+//                       <div className="flex items-center gap-2">
+//                         <Clock size={16} />
+//                         Until {formatDate(event.endDate)}
+//                       </div>
+//                     )}
+//                   </div>
+//                 </div>
+//               </div>
+//             ))}
+//           </div>
+//         ) : (
+//           <div className="text-center py-20">
+//             <SearchX className="mx-auto text-gray-300 mb-4" size={50} />
+//             <h2 className="text-xl font-bold">No Events Found</h2>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default EventsListing;

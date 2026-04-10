@@ -13,6 +13,7 @@ import Contact from './components/pages/public/Contact';
 
 import AdminLayout from './components/layout/AdminLayout';
 import AdminEvents from './components/pages/admin/AdminEvents';
+import AdminReviews from './components/pages/admin/AdminReviews';
 
 const Placeholder = ({ title }) => <div className="p-8 text-2xl text-center">{title}</div>;
 
@@ -57,7 +58,7 @@ function App() {
           <Route path="/admin" element={<ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>}>
             <Route index element={<Placeholder title="Admin Dashboard Overview" />} />
             <Route path="events" element={<AdminEvents />} />
-            <Route path="reviews" element={<Placeholder title="Manage Reviews" />} />
+            <Route path="reviews" element={<AdminReviews />} />
             <Route path="feedback" element={<Placeholder title="Manage Feedback" />} />
             <Route path="enquiries" element={<Placeholder title="Manage Enquiries" />} />
           </Route>

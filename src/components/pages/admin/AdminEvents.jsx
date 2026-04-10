@@ -17,8 +17,8 @@ const AdminEvents = () => {
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const response = await eventService.getAllEvents();
-      setEvents(response.data || []);
+      const data = await eventService.getAllEvents();
+      setEvents(Array.isArray(data) ? data : (data?.data || data?.events || []));
     } catch (error) {
       toast.error('Failed to load events');
     } finally {

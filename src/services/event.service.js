@@ -26,7 +26,7 @@ export const eventService = {
   },
 
   deleteEvent: async (id) => {
-    const response = await api.delete(`/events/${id}`);
+    const response = await api.delete(`/event/delete-event/${id}`);
     return response.data;
   }
 };
