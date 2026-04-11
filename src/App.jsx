@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import MainLayout from './components/layout/MainLayout';
 import Login from './components/pages/auth/Login';
+import AdminLogin from './components/pages/auth/AdminLogin';
 import Signup from './components/pages/auth/Signup';
 import VerifyEmail from './components/pages/auth/VerifyEmail';
 import Home from './components/pages/public/Home';
@@ -50,6 +51,7 @@ function App() {
             
             {/* Auth Routes */}
             <Route path="/login" element={<Login />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
           </Route>

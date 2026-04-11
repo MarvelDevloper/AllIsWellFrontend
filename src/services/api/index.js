@@ -8,4 +8,65 @@ const api = axios.create({
   },
 });
 
+// Track if a refresh is already in progress to avoid multiple refresh calls
+let isRefreshing = false;
+// Queue of failed requests waiting for refresh to complete
+let failedQueue = [];
+
+const processQueue = (error) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve();
+    }
+  });
+  failedQueue = [];
+};
+
+// Response interceptor — catches 401 on ANY API call
+api.interceptors.response.use(
+  (response) => response, // pass through success responses
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Only handle 401, and avoid infinite loop on the refresh call itself
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url.includes('/auth/refresh') &&
+      !originalRequest.url.includes('/auth/login')
+    ) {
+      if (isRefreshing) {
+        // Queue the request until refresh is done
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(() => api(originalRequest))
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        // Attempt token refresh
+        await api.post('/auth/refresh');
+        processQueue(null);
+        return api(originalRequest); // retry original request with new token
+      } catch (refreshError) {
+        // Refresh failed — session is truly expired → force logout
+        processQueue(refreshError);
+        // Clear user state and redirect to login
+        window.dispatchEvent(new CustomEvent('auth:logout'));
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export default api;

@@ -12,25 +12,38 @@ export const authService = {
   },
 
   verifyEmail: async (token) => {
-    const response = await api.get(`/api/verify-email?token=${token}`);
+    const response = await api.get(`/auth/verify-email?token=${token}`);
     return response.data;
   },
 
-  // Added based on "Fetch user session automatically"
-  // Assuming a /auth/me exists, otherwise relying on refresh token success
+  /**
+   * getSession()
+   * 1. Try /auth/me — if access token cookie is valid, backend returns user data
+   * 2. If 401 (access token expired) → call /auth/refresh
+   *    - Backend verifies refresh token from cookie (Redis lookup)
+   *    - Rotates refresh token (old deleted, new one set in cookie)
+   *    - Returns { success: true, token: <new accessToken> }
+   * 3. If refresh also fails (401/expired) → throw → user = null → force re-login
+   */
   getSession: async () => {
-    // A quick way to test if the session is alive is refreshing the token 
-    // or calling a protected route. Assume /auth/me returns user data.
-    const response = await api.get('/auth/me').catch((e) => {
-      // If /auth/me doesn't exist, we can fallback to checking if refresh works
-      if(e.response && e.response.status === 404) {
-         return api.post('/auth/refresh');
+    try {
+      const response = await api.get('/auth/me');
+      return response.data;
+    } catch (err) {
+      const status = err.response?.status;
+
+      // Access token expired or missing → try refresh
+      if (status === 401 || status === 403) {
+        const refreshResponse = await api.post('/auth/refresh');
+        // Returns { success: true, token: accessToken, message: "Token refreshed" }
+        return refreshResponse.data;
       }
-      throw e;
-    });
-    return response.data;
+
+      // Any other error (404, 500, etc.) → session not restorable
+      throw err;
+    }
   },
-  
+
   logout: async () => {
     const response = await api.post('/auth/logout');
     return response.data;
